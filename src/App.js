@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import Header from './components/Header';
 import Home from './components/Home';
@@ -7,16 +7,18 @@ import SignUp from './components/SignUp';
 import DashBoard from './components/DashBoard';
 
 function App() {
-  const [status, setStatus] = useState(false);
+  const [isLogin, setIsLogin] = useState(false);
+
+  useEffect(() => {}, []);
 
   return (
     <>
-      <Header status={status} setStatus={setStatus} />
+      <Header isLogin={isLogin} setIsLogin={setIsLogin} />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route
           path="/login"
-          element={<Login setStatus={setStatus} status={status} />}
+          element={<Login setIsLogin={setIsLogin} isLogin={isLogin} />}
         />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/dashboard" element={<DashBoard />} />

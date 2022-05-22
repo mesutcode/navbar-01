@@ -2,18 +2,24 @@ import { Container, Nav, Navbar } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 function Header(props) {
-  const { status, setStatus } = props;
+  const { isLogin, setIsLogin } = props;
 
-  const renderNav = status ? (
+  const handleClick = () => {
+    setIsLogin(false);
+    localStorage.clear();
+  };
+
+  const name = (params) => {};
+  const renderNav = isLogin ? (
     <>
       <Nav className="me-auto">
-        <Link to="/dashborad" className="nav-link">
+        <Link to="/dashboard" className="nav-link">
           Dashboard
         </Link>
       </Nav>
 
       <Nav>
-        <Link to="/" className="nav-link" onClick={() => localStorage.clear()}>
+        <Link to="/" className="nav-link" onClick={handleClick}>
           Logout
         </Link>
       </Nav>
@@ -38,7 +44,7 @@ function Header(props) {
       </Nav>
     </>
   );
-  //console.log('Header-->', status);
+  //console.log('Header-->', isLogin);
   return (
     <section>
       <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">

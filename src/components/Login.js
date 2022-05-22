@@ -1,14 +1,45 @@
-import React, { useState } from 'react';
-import { Col, Container, Row, Form, Button } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react';
+import { Alert, Col, Container, Row, Form, Button } from 'react-bootstrap';
 import axios from 'axios';
 import { Navigate } from 'react-router-dom';
 
+import validationLogin from './validationLogin';
+
 function Login(props) {
   const [user, setUser] = useState({ email: '', password: '' });
-  const { status, setStatus } = props;
+  const [errors, setErrors] = useState({});
+  const [hasError, setHasError] = useState(true);
+  const [loader, setLoader] = useState(false);
+
+  const { isLogin, setIsLogin } = props;
+
+  useEffect(() => {
+    if (hasError === false && Object.keys(errors).length === 0) {
+      const loadLogin = async () => {
+        setLoader(true);
+        const response = await axios.post(
+          'http://localhost:3300/v1/auth/login',
+          user
+        );
+
+        if (response.data.status) {
+          localStorage.setItem('userToken', response.data.token);
+          setIsLogin(response.data.status);
+        } else if (response.data.emailError) {
+          setErrors({ emailError: response.data.message });
+          setLoader(false);
+        } else {
+          setErrors({ passwordError: response.data.message });
+          setLoader(false);
+        }
+      };
+      setLoader(false);
+      loadLogin();
+    }
+  }, [errors]);
+
   const handleCahnge = (event) => {
     const { name, value } = event.target;
-    // let navigate = useNavigate();
 
     setUser({
       ...user,
@@ -16,30 +47,26 @@ function Login(props) {
     });
   };
 
-  const onLogin = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-
-    axios
-      .post('http://localhost:3300/v1/auth/login', user)
-      .then((res) => res.data)
-      .then((res) => {
-        if (res.status) {
-          localStorage.setItem('userToken', res.token);
-          setStatus(res.status);
-        } else {
-          alert('bilgilerinizi kontrol ediniz');
-        }
-      });
+    setErrors(validationLogin(user));
+    setHasError(false);
   };
-  //console.log('Login-->', setStatus);
-  if (status) {
+
+  if (isLogin) {
     return <Navigate to="/dashboard" />;
   } else {
     return (
       <Container>
-        <h1 className="shadow-sm text-success mt-5 p-3 text-center rounded">
-          Log In
-        </h1>
+        {loader ? (
+          <h1 className="shadow-sm text-success mt-5 p-3 text-center rounded">
+            Loadding...
+          </h1>
+        ) : (
+          <h1 className="shadow-sm text-success mt-5 p-3 text-center rounded">
+            Log In
+          </h1>
+        )}
         <Row className="mt-5">
           <Col
             lg={5}
@@ -47,7 +74,7 @@ function Login(props) {
             sm={12}
             className="p-5 m-auto shadow-sm rounded-lg"
           >
-            <Form onSubmit={onLogin}>
+            <Form onSubmit={handleSubmit}>
               <Form.Group className="mb-3" controlId="formBasicEmail">
                 <Form.Label>Email address</Form.Label>
                 <Form.Control
@@ -58,6 +85,9 @@ function Login(props) {
                   value={user.email}
                 />
               </Form.Group>
+              {errors.emailError && (
+                <Alert variant="danger">{errors.emailError}</Alert>
+              )}
               <Form.Group className="mb-3" controlId="formBasicPassword">
                 <Form.Label>Password</Form.Label>
                 <Form.Control
@@ -68,6 +98,9 @@ function Login(props) {
                   value={user.password}
                 />
               </Form.Group>
+              {errors.passwordError && (
+                <Alert variant="danger">{errors.passwordError}</Alert>
+              )}
               <div className="d-grid gap-2">
                 <Button variant="success" type="submit" className="btn-block">
                   Submit
